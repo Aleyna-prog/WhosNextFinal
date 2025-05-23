@@ -5,8 +5,16 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import com.example.whosdaresample.data.GameStat
+import com.example.whosdaresample.data.GameStatDao
 
-class GameViewModel : ViewModel(), LifecycleObserver {
+
+class GameViewModel(
+    private val statDao: GameStatDao
+) : ViewModel(), LifecycleObserver {
+
     val playerNames = mutableStateListOf<String>()
     val currentPlayer = mutableStateOf("")
     val selectedOption = mutableStateOf<String?>(null)
@@ -69,11 +77,32 @@ class GameViewModel : ViewModel(), LifecycleObserver {
     }
 
     fun recordChoice(type: String) {
-        gameStats.add("${currentPlayer.value}: $type")
+        val player = currentPlayer.value
+        gameStats.add("$player: $type")
+
+        viewModelScope.launch {
+            statDao.insert(GameStat(playerName = player, choice = type))
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
         // Optional: save game state if needed
     }
+
+    fun getStatsGroupedByPlayer(
+        onResult: (Map<String, Pair<Int, Int>>) -> Unit
+    ) {
+        viewModelScope.launch {
+            val stats = statDao.getAllStats()
+            val grouped = stats.groupBy { it.playerName }
+                .mapValues { entry ->
+                    val truths = entry.value.count { it.choice == "Truth" }
+                    val dares = entry.value.count { it.choice == "Dare" }
+                    truths to dares
+                }
+            onResult(grouped)
+        }
+    }
+
 }
