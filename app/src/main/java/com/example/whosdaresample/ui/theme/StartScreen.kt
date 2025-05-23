@@ -1,4 +1,5 @@
-package com.example.whosdaresample.ui.theme
+// Datei: StartScreen.kt
+package com.example.whosdaresample.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,12 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.whosdaresample.GameViewModel
 
 @Composable
 fun StartScreen(
-    playerNames: List<String>,
-    onAddName: (String) -> Unit,
-    onRemoveName: (String) -> Unit,
+    viewModel: GameViewModel,
     onStartGame: () -> Unit
 ) {
     var nameInput by remember { mutableStateOf("") }
@@ -30,7 +31,7 @@ fun StartScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black) // 👈 Hintergrund tiefschwarz
+            .background(Color.Black)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -61,11 +62,10 @@ fun StartScreen(
 
             Button(
                 onClick = {
-                    if (nameInput.isNotBlank()) {
-                        onAddName(nameInput.trim())
-                        nameInput = ""
-                    }
+                    viewModel.addPlayer(nameInput.trim())
+                    nameInput = ""
                 },
+                enabled = nameInput.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
                     contentColor = Color.Cyan
@@ -89,7 +89,7 @@ fun StartScreen(
         }
 
         LazyColumn {
-            items(playerNames) { name ->
+            items(viewModel.playerNames) { name ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -107,7 +107,7 @@ fun StartScreen(
                             )
                         )
                     )
-                    IconButton(onClick = { onRemoveName(name) }) {
+                    IconButton(onClick = { viewModel.removePlayer(name) }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Remove",
@@ -120,7 +120,7 @@ fun StartScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        if (playerNames.size >= 2) {
+        if (viewModel.playerNames.size >= 2) {
             NeonStartButton(onClick = onStartGame)
         }
     }
@@ -134,7 +134,7 @@ fun WelcomeCard() {
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1A1A1A) // 👈 dunkler Hintergrund
+            containerColor = Color(0xFF1A1A1A)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -144,7 +144,7 @@ fun WelcomeCard() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Welcome to Who's next!",
+                text = "Welcome to Who's Next!",
                 style = MaterialTheme.typography.headlineSmall.copy(
                     color = Color.Magenta,
                     shadow = Shadow(

@@ -1,62 +1,35 @@
+// Datei: MainActivity.kt
 package com.example.whosdaresample
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.*
-import androidx.navigation.compose.*
-import com.example.whosdaresample.ui.theme.*
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.whosdaresample.navigation.AppNavigation
+import com.example.whosdaresample.ui.screens.*
+import com.example.whosdaresample.ui.theme.WhosdaresampleTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: GameViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(viewModel)
+
         setContent {
             WhosdaresampleTheme {
                 val navController = rememberNavController()
-                var playerNames by remember { mutableStateOf(listOf<String>()) }
-                var currentPlayer by remember { mutableStateOf("") }
 
-                NavHost(navController = navController, startDestination = "start") {
-                    composable("start") {
-                        StartScreen(
-                            playerNames = playerNames,
-                            onAddName = { name ->
-                                if (name.isNotBlank() && !playerNames.contains(name)) {
-                                    playerNames = playerNames + name
-                                }
-                            },
-                            onRemoveName = { name ->
-                                playerNames = playerNames - name
-                            },
-                            onStartGame = {
-                                navController.navigate("spin")
-                            }
-                        )
-                    }
-
-                    composable("spin") {
-                        SpinBottleScreen(
-                            playerNames = playerNames,
-                            onPlayerChosen = { chosen ->
-                                currentPlayer = chosen
-                                navController.navigate("game")
-                            }
-                        )
-                    }
-
-                    composable("game") {
-                        GameScreen(
-                            currentPlayer = currentPlayer,
-                            onNextRound = {
-                                navController.navigate("spin")
-                            }
-                        )
-                    }
-                }
+                AppNavigation(navController = navController, viewModel = viewModel)
             }
         }
     }
 }
+
