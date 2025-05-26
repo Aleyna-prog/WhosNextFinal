@@ -32,31 +32,38 @@ fun GameScreen(
     onEndGame: () -> Unit
 ) {
     var countdown by remember { mutableStateOf(15) }
-    var autoSelected by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
 
     val selectedOption = viewModel.selectedOption
     val currentTask = viewModel.currentTask
+    val isShuffle = viewModel.isShuffleMode.value
     val scale by animateFloatAsState(
-        targetValue = if (countdown <= 5 && selectedOption.value == null) 1.5f else 1f,
+        targetValue = if (countdown <= 5 && selectedOption.value == null && !isShuffle) 1.5f else 1f,
         animationSpec = tween(300), label = "Countdown Scale"
     )
 
-    LaunchedEffect(selectedOption.value) {
+    LaunchedEffect(Unit) {
         if (selectedOption.value == null) {
-            countdown = 15
-            autoSelected = false
-            while (countdown > 0) {
-                delay(1000L)
-                countdown--
-            }
-            if (selectedOption.value == null) {
-                autoSelected = true
-                val type = if ((0..1).random() == 0) "Truth" else "Dare"
+            if (isShuffle) {
+                val type = listOf("Truth", "Dare").random()
                 viewModel.selectedOption.value = type
                 viewModel.currentTask.value = viewModel.getTask(type)
                 viewModel.recordChoice(type)
+                delay(300)
                 playBeep()
+            } else {
+                countdown = 15
+                while (countdown > 0) {
+                    delay(1000L)
+                    countdown--
+                }
+                if (selectedOption.value == null) {
+                    val type = if ((0..1).random() == 0) "Truth" else "Dare"
+                    viewModel.selectedOption.value = type
+                    viewModel.currentTask.value = viewModel.getTask(type)
+                    viewModel.recordChoice(type)
+                    playBeep()
+                }
             }
         }
     }
@@ -92,7 +99,7 @@ fun GameScreen(
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            if (selectedOption.value == null) {
+            if (selectedOption.value == null && !isShuffle) {
                 Text(
                     text = "⏱️ $countdown s left to choose",
                     color = if (countdown <= 5) Color.Red else Color.White,
@@ -130,7 +137,7 @@ fun GameScreen(
                         modifier = Modifier.weight(1f)
                     )
                 }
-            } else {
+            } else if (selectedOption.value != null) {
                 Text("Your ${selectedOption.value} task:", color = Color.White)
                 Text(
                     text = currentTask.value,
@@ -152,7 +159,6 @@ fun GameScreen(
                         Text("Use Joker", color = Color.Black)
                     }
                 }
-
 
                 Button(
                     onClick = {
@@ -204,8 +210,8 @@ fun TaskBox(label: String, color: Color, onClick: () -> Unit, modifier: Modifier
     }
 }
 
-
 fun playBeep() {
     val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
     toneGen.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT, 300)
 }
+

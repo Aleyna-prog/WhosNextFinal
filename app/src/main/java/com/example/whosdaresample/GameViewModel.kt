@@ -1,15 +1,13 @@
 package com.example.whosdaresample
 
-
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import com.example.whosdaresample.data.GameStat
 import com.example.whosdaresample.data.GameStatDao
-
+import kotlinx.coroutines.launch
 
 class GameViewModel(
     private val statDao: GameStatDao
@@ -20,13 +18,13 @@ class GameViewModel(
     val selectedOption = mutableStateOf<String?>(null)
     val currentTask = mutableStateOf("")
     val jokerUsage = mutableStateMapOf<String, Boolean>()
+    val isShuffleMode = mutableStateOf(false)
 
     fun hasUsedJoker(name: String): Boolean = jokerUsage[name] == true
 
     fun useJoker(name: String) {
         jokerUsage[name] = true
     }
-
 
     val gameStats = mutableStateListOf<String>()
 
@@ -65,10 +63,14 @@ class GameViewModel(
     }
 
     fun getTask(type: String): String {
-        val source = if (type == "Truth") truthTasks else dareTasks
-        val used = if (type == "Truth") usedTruthTasks else usedDareTasks
+        val actualType = if (isShuffleMode.value) listOf("Truth", "Dare").random() else type
+        val base = if (actualType == "Truth") truthTasks else dareTasks
+        val custom = customTasks.filter { it.type == actualType }.map { it.text }
+        val source = base + custom
 
+        val used = if (actualType == "Truth") usedTruthTasks else usedDareTasks
         val available = source.filterNot { it in used }
+
         if (available.isEmpty()) used.clear()
 
         val newTask = (source - used).random()
@@ -105,4 +107,16 @@ class GameViewModel(
         }
     }
 
+    // ---- Custom Tasks ----
+    val customTasks = mutableStateListOf<CustomTask>()
+
+    fun addCustomTask(type: String, text: String) {
+        if (text.isNotBlank()) {
+            customTasks.add(CustomTask(type, text))
+        }
+    }
+
+    fun removeCustomTask(task: CustomTask) {
+        customTasks.remove(task)
+    }
 }

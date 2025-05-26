@@ -1,4 +1,3 @@
-// Datei: StartScreen.kt
 package com.example.whosdaresample.ui.screens
 
 import androidx.compose.foundation.background
@@ -24,7 +23,8 @@ import com.example.whosdaresample.GameViewModel
 @Composable
 fun StartScreen(
     viewModel: GameViewModel,
-    onStartGame: () -> Unit
+    onStartGame: () -> Unit,
+    onOpenCustomTasks: () -> Unit
 ) {
     var nameInput by remember { mutableStateOf("") }
 
@@ -37,15 +37,11 @@ fun StartScreen(
     ) {
         WelcomeCard()
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = nameInput,
                 onValueChange = { nameInput = it },
-                label = {
-                    Text("Enter name", color = Color.Cyan)
-                },
+                label = { Text("Enter name", color = Color.Cyan) },
                 modifier = Modifier
                     .weight(1f)
                     .height(60.dp),
@@ -118,10 +114,33 @@ fun StartScreen(
             }
         }
 
+        // ➕ Shuffle Mode Toggle
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 8.dp, start = 8.dp)
+        ) {
+            Checkbox(
+                checked = viewModel.isShuffleMode.value,
+                onCheckedChange = { viewModel.isShuffleMode.value = it },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = Color.Cyan,
+                    uncheckedColor = Color.Gray
+                )
+            )
+            Text("Shuffle Mode", color = Color.Cyan)
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
         if (viewModel.playerNames.size >= 2) {
             NeonStartButton(onClick = onStartGame)
+        }
+
+        TextButton(
+            onClick = onOpenCustomTasks,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text("✏️ Custom Tasks", color = Color.LightGray)
         }
     }
 }
@@ -133,49 +152,34 @@ fun WelcomeCard() {
             .fillMaxWidth()
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1A1A1A)
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(
-            modifier = Modifier
-                .padding(24.dp),
+            modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
                 text = "Welcome to Who's Next!",
                 style = MaterialTheme.typography.headlineSmall.copy(
                     color = Color.Magenta,
-                    shadow = Shadow(
-                        color = Color.Magenta,
-                        blurRadius = 12f
-                    )
+                    shadow = Shadow(color = Color.Magenta, blurRadius = 12f)
                 )
             )
-
             Text(
                 text = "Enter all player names (min. 2) to begin. A random player will be chosen each round to decide: Truth or Dare.",
                 style = MaterialTheme.typography.bodyLarge.copy(color = Color.LightGray)
             )
-
             Text(
                 text = "\u23F3 No decision? Countdown is running... The system will decide!",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color.Yellow
-                )
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.Yellow)
             )
-
             Text(
                 text = "Have fun!",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Cyan,
-                    shadow = Shadow(
-                        color = Color.Cyan,
-                        offset = Offset(0f, 0f),
-                        blurRadius = 12f
-                    )
+                    shadow = Shadow(color = Color.Cyan, offset = Offset(0f, 0f), blurRadius = 12f)
                 )
             )
         }
@@ -204,11 +208,7 @@ fun NeonStartButton(onClick: () -> Unit) {
                 text = "START GAME",
                 style = MaterialTheme.typography.labelLarge.copy(
                     color = Color.Cyan,
-                    shadow = Shadow(
-                        color = Color.Cyan,
-                        offset = Offset(0f, 0f),
-                        blurRadius = 20f
-                    ),
+                    shadow = Shadow(color = Color.Cyan, offset = Offset(0f, 0f), blurRadius = 20f),
                     fontWeight = FontWeight.Bold
                 )
             )

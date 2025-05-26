@@ -10,6 +10,8 @@ import com.example.whosdaresample.ui.screens.*
 import com.example.whosdaresample.ui.theme.EndScreen
 import com.example.whosdaresample.ui.theme.GameScreen
 import com.example.whosdaresample.ui.theme.SpinBottleScreen
+import com.example.whosdaresample.ui.theme.CustomTaskScreen
+
 
 @Composable
 fun AppNavigation(navController: NavHostController, viewModel: GameViewModel) {
@@ -17,7 +19,8 @@ fun AppNavigation(navController: NavHostController, viewModel: GameViewModel) {
         composable("start") {
             StartScreen(
                 viewModel = viewModel,
-                onStartGame = { navController.navigate("spin") }
+                onStartGame = { navController.navigate("spin") },
+                onOpenCustomTasks = {navController.navigate("custom")}
             )
         }
         composable("spin") {
@@ -43,5 +46,12 @@ fun AppNavigation(navController: NavHostController, viewModel: GameViewModel) {
                 }
             )
         }
+        composable("custom") {
+            CustomTaskScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
     }
 }
