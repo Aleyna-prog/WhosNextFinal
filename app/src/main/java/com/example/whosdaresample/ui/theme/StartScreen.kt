@@ -1,5 +1,6 @@
 package com.example.whosdaresample.ui.screens
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,10 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.whosdaresample.GameViewModel
+import com.example.whosdaresample.R
 
 @Composable
 fun StartScreen(
@@ -27,6 +29,8 @@ fun StartScreen(
     onOpenCustomTasks: () -> Unit
 ) {
     var nameInput by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val mediaPlayer = remember { MediaPlayer.create(context, R.raw.tap) }
 
     Column(
         modifier = Modifier
@@ -58,6 +62,7 @@ fun StartScreen(
 
             Button(
                 onClick = {
+                    mediaPlayer.start()
                     viewModel.addPlayer(nameInput.trim())
                     nameInput = ""
                 },
@@ -86,6 +91,7 @@ fun StartScreen(
 
         LazyColumn {
             items(viewModel.playerNames) { name ->
+                val emoji = viewModel.getEmojiForPlayer(name)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -93,7 +99,7 @@ fun StartScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = name,
+                        text = if (!emoji.isNullOrBlank()) "$emoji $name" else name,
                         color = Color.Cyan,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium,
@@ -114,7 +120,6 @@ fun StartScreen(
             }
         }
 
-        // ➕ Shuffle Mode Toggle
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(top = 8.dp, start = 8.dp)
@@ -133,7 +138,10 @@ fun StartScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         if (viewModel.playerNames.size >= 2) {
-            NeonStartButton(onClick = onStartGame)
+            NeonStartButton {
+                mediaPlayer.start()
+                onStartGame()
+            }
         }
 
         TextButton(

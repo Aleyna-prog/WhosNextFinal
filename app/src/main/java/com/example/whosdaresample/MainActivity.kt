@@ -9,6 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.whosdaresample.data.AppDatabase
 import com.example.whosdaresample.navigation.AppNavigation
 import com.example.whosdaresample.ui.theme.WhosdaresampleTheme
+import android.app.Application
+
 
 class MainActivity : ComponentActivity() {
 
@@ -26,10 +28,13 @@ class MainActivity : ComponentActivity() {
         viewModel = ViewModelProvider(this, factory)[GameViewModel::class.java]
         lifecycle.addObserver(viewModel)
 
+        // Tasks aus JSON laden
+        viewModel.loadTasksFromJson(application)
+
         // UI starten
         setContent {
-            WhosdaresampleTheme {
-                val navController = rememberNavController()
+            val navController = rememberNavController()
+            WhosdaresampleTheme(darkTheme = !viewModel.isLightTheme.value) {
                 AppNavigation(navController = navController, viewModel = viewModel)
             }
         }

@@ -1,13 +1,17 @@
 package com.example.whosdaresample
 
+import android.app.Application
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
-import androidx.lifecycle.viewModelScope
 import com.example.whosdaresample.data.GameStat
 import com.example.whosdaresample.data.GameStatDao
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import java.io.BufferedReader
 
 class GameViewModel(
     private val statDao: GameStatDao
@@ -19,6 +23,26 @@ class GameViewModel(
     val currentTask = mutableStateOf("")
     val jokerUsage = mutableStateMapOf<String, Boolean>()
     val isShuffleMode = mutableStateOf(false)
+    val isLightTheme = mutableStateOf(false)
+    val playerEmojis = mutableStateMapOf<String, String>()
+
+    private val defaultAvatars = listOf("😎", "🐱", "👽", "🤖", "🦊", "🐸", "🧙", "👸", "🦁", "🐼")
+
+    private val usedTruthTasks = mutableListOf<String>()
+    private val usedDareTasks = mutableListOf<String>()
+
+    val gameStats = mutableStateListOf<String>()
+    val customTasks = mutableStateListOf<CustomTask>()
+    val truthTasks = mutableStateListOf(
+        "What is your biggest fear?",
+        "Have you ever cheated?",
+        "What's a secret you never told anyone?"
+    )
+    val dareTasks = mutableStateListOf(
+        "Do a silly dance!",
+        "Speak like a robot for 1 minute!",
+        "Sing the chorus of your favorite song!"
+    )
 
     fun hasUsedJoker(name: String): Boolean = jokerUsage[name] == true
 
@@ -26,31 +50,17 @@ class GameViewModel(
         jokerUsage[name] = true
     }
 
-    val gameStats = mutableStateListOf<String>()
-
-    private val usedTruthTasks = mutableListOf<String>()
-    private val usedDareTasks = mutableListOf<String>()
-
-    val truthTasks = mutableListOf(
-        "What is your biggest fear?",
-        "Have you ever cheated?",
-        "What's a secret you never told anyone?"
-    )
-
-    val dareTasks = mutableListOf(
-        "Do a silly dance!",
-        "Speak like a robot for 1 minute!",
-        "Sing the chorus of your favorite song!"
-    )
-
-    fun addPlayer(name: String) {
+    fun addPlayer(name: String, emoji: String? = null) {
         if (name.isNotBlank() && !playerNames.contains(name)) {
             playerNames.add(name)
+            val avatar = emoji?.takeIf { it.isNotBlank() } ?: defaultAvatars.shuffled().firstOrNull() ?: "🙂"
+            playerEmojis[name] = avatar
         }
     }
 
     fun removePlayer(name: String) {
         playerNames.remove(name)
+        playerEmojis.remove(name)
     }
 
     fun pickRandomPlayer() {
@@ -92,9 +102,7 @@ class GameViewModel(
         // Optional: save game state if needed
     }
 
-    fun getStatsGroupedByPlayer(
-        onResult: (Map<String, Pair<Int, Int>>) -> Unit
-    ) {
+    fun getStatsGroupedByPlayer(onResult: (Map<String, Pair<Int, Int>>) -> Unit) {
         viewModelScope.launch {
             val stats = statDao.getAllStats()
             val grouped = stats.groupBy { it.playerName }
@@ -107,9 +115,6 @@ class GameViewModel(
         }
     }
 
-    // ---- Custom Tasks ----
-    val customTasks = mutableStateListOf<CustomTask>()
-
     fun addCustomTask(type: String, text: String) {
         if (text.isNotBlank()) {
             customTasks.add(CustomTask(type, text))
@@ -118,5 +123,29 @@ class GameViewModel(
 
     fun removeCustomTask(task: CustomTask) {
         customTasks.remove(task)
+    }
+
+    fun loadTasksFromJson(application: Application) {
+        viewModelScope.launch {
+            val jsonString = withContext(Dispatchers.IO) {
+                application.assets.open("truth-n-dare.json").bufferedReader().use(BufferedReader::readText)
+            }
+
+            val jsonArray = JSONArray(jsonString)
+            for (i in 0 until jsonArray.length()) {
+                val item = jsonArray.getJSONObject(i)
+                val type = item.getString("type")
+                val summary = item.getString("summary")
+                if (type == "Truth") {
+                    truthTasks.add(summary)
+                } else if (type == "Dare") {
+                    dareTasks.add(summary)
+                }
+            }
+        }
+    }
+
+    fun getEmojiForPlayer(name: String): String? {
+        return playerEmojis[name]
     }
 }
