@@ -26,7 +26,11 @@ fun AppNavigation(navController: NavHostController, viewModel: GameViewModel) {
         composable("spin") {
             SpinBottleScreen(
                 viewModel = viewModel,
-                onPlayerChosen = { navController.navigate("game") }
+                onPlayerChosen = {
+                    viewModel.resetRound()
+                    viewModel.roundStarted.value = true
+                    navController.navigate("game")
+                }
             )
         }
         composable("game") {

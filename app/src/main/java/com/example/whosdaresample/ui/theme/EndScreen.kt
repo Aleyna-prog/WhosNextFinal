@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 fun EndScreen(
     viewModel: GameViewModel,
     onRestart: () -> Unit
+
 ) {
     val scope = rememberCoroutineScope()
     var statsMap by remember { mutableStateOf<Map<String, Pair<Int, Int>>>(emptyMap()) }
@@ -91,10 +92,15 @@ fun EndScreen(
         }
 
         Button(
-            onClick = onRestart,
+            onClick = {
+                viewModel.resetRound()
+                viewModel.roundStarted.value = false
+                onRestart()
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color.Cyan)
         ) {
             Text("Restart", color = Color.Black, fontWeight = FontWeight.Bold)
         }
+
     }
 }

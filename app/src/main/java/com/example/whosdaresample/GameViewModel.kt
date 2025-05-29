@@ -7,7 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.example.whosdaresample.data.GameStat
 import com.example.whosdaresample.data.GameStatDao
+import com.example.whosdaresample.ui.theme.playBeep
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -15,7 +18,7 @@ import java.io.BufferedReader
 
 class GameViewModel(
     private val statDao: GameStatDao
-) : ViewModel(), LifecycleObserver {
+) : ViewModel(), DefaultLifecycleObserver{
 
     val playerNames = mutableStateListOf<String>()
     val currentPlayer = mutableStateOf("")
@@ -25,6 +28,15 @@ class GameViewModel(
     val isShuffleMode = mutableStateOf(false)
     val isLightTheme = mutableStateOf(false)
     val playerEmojis = mutableStateMapOf<String, String>()
+    val countdown = mutableStateOf(15)
+    val isCountingDown = mutableStateOf(false)
+    val roundStarted = mutableStateOf(false)
+    private var countdownJob: Job? = null
+    private var countdownStartTime: Long? = null // Zeitstempel
+    private val totalCountdownDuration = 15 // Sekunden
+
+
+
 
     private val defaultAvatars = listOf("😎", "🐱", "👽", "🤖", "🦊", "🐸", "🧙", "👸", "🦁", "🐼")
 
@@ -70,6 +82,8 @@ class GameViewModel(
     fun resetRound() {
         selectedOption.value = null
         currentTask.value = ""
+        countdown.value = 15
+        countdownStartTime = null
     }
 
     fun getTask(type: String): String {
@@ -97,10 +111,63 @@ class GameViewModel(
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onAppBackgrounded() {
-        // Optional: save game state if needed
+    override fun onStart(owner: LifecycleOwner) {
+        if (!isShuffleMode.value && selectedOption.value == null && countdownStartTime != null && !isCountingDown.value) {
+            val elapsed = ((System.currentTimeMillis() - countdownStartTime!!) / 1000).toInt()
+            val remaining = totalCountdownDuration - elapsed
+
+            if (remaining > 0) {
+                startCountdown {}
+            } else {
+                val type = listOf("Truth", "Dare").random()
+                selectedOption.value = type
+                currentTask.value = getTask(type)
+                recordChoice(type)
+            }
+        }
     }
+
+
+    override fun onStop(owner: LifecycleOwner) {
+        countdownJob?.cancel()
+        isCountingDown.value = false
+    }
+
+
+    fun startCountdown(onAutoSelect: () -> Unit) {
+        if (isCountingDown.value || selectedOption.value != null || isShuffleMode.value) return
+
+        if (countdownStartTime == null) {
+            countdownStartTime = System.currentTimeMillis()
+        }
+
+        isCountingDown.value = true
+
+        countdownJob = viewModelScope.launch {
+            while (true) {
+                val elapsed = ((System.currentTimeMillis() - countdownStartTime!!) / 1000).toInt()
+                val remaining = totalCountdownDuration - elapsed
+                countdown.value = remaining
+
+                if (remaining <= 0) break
+                delay(1000)
+            }
+
+            if (selectedOption.value == null) {
+                val type = listOf("Truth", "Dare").random()
+                selectedOption.value = type
+                currentTask.value = getTask(type)
+                recordChoice(type)
+                onAutoSelect()
+            }
+
+            isCountingDown.value = false
+        }
+    }
+
+
+
+
 
     fun getStatsGroupedByPlayer(onResult: (Map<String, Pair<Int, Int>>) -> Unit) {
         viewModelScope.launch {
