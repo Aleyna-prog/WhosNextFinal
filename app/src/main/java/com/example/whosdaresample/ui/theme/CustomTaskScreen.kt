@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,21 +30,17 @@ fun CustomTaskScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Custom Tasks", color = Color.Cyan) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.Delete, contentDescription = "Back", tint = Color.Red)
-                    }
-                }
+                title = { Text("Custom Tasks", color = MaterialTheme.colorScheme.primary) },
             )
+
         },
-        containerColor = Color.Black
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -71,12 +68,12 @@ fun CustomTaskScreen(
             OutlinedTextField(
                 value = newTaskText,
                 onValueChange = { newTaskText = it },
-                label = { Text("New $selectedTab task", color = Color.Cyan) },
+                label = { Text("New $selectedTab task", color = MaterialTheme.colorScheme.primary) },
                 modifier = Modifier.fillMaxWidth(),
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
+                textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onBackground),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Cyan,
-                    unfocusedBorderColor = Color.Cyan
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
 
@@ -86,14 +83,14 @@ fun CustomTaskScreen(
                     newTaskText = ""
                 },
                 enabled = newTaskText.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Cyan),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text("Add", color = Color.Black)
             }
 
             // List
-            Text("Your $selectedTab Tasks", color = Color.Cyan)
+            Text("Your $selectedTab Tasks", color = MaterialTheme.colorScheme.primary)
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
@@ -104,7 +101,7 @@ fun CustomTaskScreen(
                 items(filtered) { task ->
                     Card(
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -114,7 +111,7 @@ fun CustomTaskScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(task.text, color = Color.White)
+                            Text(task.text, color = MaterialTheme.colorScheme.onBackground)
                             IconButton(onClick = { viewModel.removeCustomTask(task) }) {
                                 Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
                             }
@@ -126,10 +123,10 @@ fun CustomTaskScreen(
             // Zurück-Button
             Button(
                 onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Cyan),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Back to Menu", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("Back to Menu", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
             }
         }
     }

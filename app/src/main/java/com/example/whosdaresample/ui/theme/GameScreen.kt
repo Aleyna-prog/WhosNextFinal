@@ -2,20 +2,15 @@ package com.example.whosdaresample.ui.theme
 
 import android.media.AudioManager
 import android.media.ToneGenerator
-import android.os.SystemClock
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -132,7 +127,7 @@ fun GameScreen(
     }
 
     Scaffold(
-        containerColor = Color.Black,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -143,7 +138,7 @@ fun GameScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.logo),
+                            painter = painterResource(id = R.drawable.logo1),
                             contentDescription = "Logo",
                             modifier = Modifier
                                 .size(80.dp)
@@ -168,7 +163,7 @@ fun GameScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -183,14 +178,14 @@ fun GameScreen(
         ) {
             Text(
                 text = "$currentPlayer, it's your turn!",
-                color = Color.Cyan,
+                color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.headlineMedium
             )
 
             if (selectedOption == null && !isShuffle) {
                 Text(
                     text = "⏱️ ${remainingTime.value / 1000} s left to choose",
-                    color = if (remainingTime.value <= 5000) Color.Red else Color.White,
+                    color = if (remainingTime.value <= 5000) Color.Red else MaterialTheme.colorScheme.onBackground,
                     fontSize = (20 * scale).sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -229,16 +224,31 @@ fun GameScreen(
                             .border(3.dp, Color.Yellow, RoundedCornerShape(20.dp))
                     )
                 }
+                if (!viewModel.hasUsedJoker(currentPlayer)) {
+                    Button(
+                        onClick = {
+                            viewModel.useJoker(currentPlayer)
+                            viewModel.resetRound()
+                            remainingTime.value = totalDuration
+                            onNextRound()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Yellow),
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text("Use Joker", color = Color.Black)
+                    }
+                }
+
             } else if (selectedOption != null) {
-                Text("Your ${selectedOption} task:", color = Color.White)
+                Text("Your ${selectedOption} task:", color = MaterialTheme.colorScheme.onBackground)
                 Text(
                     text = currentTask,
-                    color = Color.LightGray,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
-                if (!viewModel.hasUsedJoker(currentPlayer)) {
+                if (!viewModel.hasUsedJoker(currentPlayer) && isShuffle) {
                     Button(
                         onClick = {
                             viewModel.useJoker(currentPlayer)
@@ -259,7 +269,7 @@ fun GameScreen(
                         remainingTime.value = totalDuration
                         onNextRound()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Cyan),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier = Modifier
                         .padding(top = 24.dp)
                         .height(55.dp)

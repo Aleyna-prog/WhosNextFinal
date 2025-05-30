@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.whosdaresample.GameViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun EndScreen(
@@ -31,7 +30,7 @@ fun EndScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -39,13 +38,13 @@ fun EndScreen(
         Text(
             text = "Game Over!",
             style = MaterialTheme.typography.headlineLarge,
-            color = Color.Cyan
+            color = MaterialTheme.colorScheme.primary
         )
 
         Text(
             text = "Statistik",
             style = MaterialTheme.typography.titleMedium,
-            color = Color.Magenta
+            color = MaterialTheme.colorScheme.secondary
         )
 
         if (statsMap.isNotEmpty()) {
@@ -59,7 +58,7 @@ fun EndScreen(
                     item {
                         Card(
                             shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                            colors = CardDefaults.cardColors(containerColor = Color.DarkGray),
                             elevation = CardDefaults.cardElevation(10.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -97,9 +96,9 @@ fun EndScreen(
                 viewModel.roundStarted.value = false
                 onRestart()
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Cyan)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text("Restart", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text("Restart", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
         }
 
     }

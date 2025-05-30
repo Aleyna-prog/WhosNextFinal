@@ -34,7 +34,8 @@ class MainActivity : ComponentActivity() {
         // UI starten
         setContent {
             val navController = rememberNavController()
-            WhosdaresampleTheme(darkTheme = !viewModel.isLightTheme.value) {
+            val isLight = viewModel.isLightTheme.value
+            WhosdaresampleTheme(darkTheme = !isLight) {
                 AppNavigation(navController = navController, viewModel = viewModel)
             }
         }

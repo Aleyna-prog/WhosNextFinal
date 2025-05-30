@@ -56,12 +56,12 @@ fun SpinBottleScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        Text("Who's next?", color = Color.Cyan, style = MaterialTheme.typography.headlineMedium)
+        Text("Who's next?", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
 
         Image(
             painter = painterResource(id = R.drawable.bottle),
@@ -74,7 +74,7 @@ fun SpinBottleScreen(
         Button(
             onClick = { if (!isSpinning) isSpinning = true },
             enabled = !isSpinning,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Cyan)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text("Spin!", color = Color.Black, fontWeight = FontWeight.Bold)
         }
@@ -82,7 +82,7 @@ fun SpinBottleScreen(
         if (showChosen && viewModel.currentPlayer.value.isNotBlank()) {
             Text(
                 text = "${viewModel.currentPlayer.value}, it's your turn!",
-                color = Color.Yellow,
+                color = Color.Magenta,
                 style = MaterialTheme.typography.bodyLarge
             )
         }
