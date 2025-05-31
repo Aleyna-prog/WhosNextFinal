@@ -30,6 +30,11 @@ class GameViewModel(
     val countdown = mutableStateOf(15)
     val isCountingDown = mutableStateOf(false)
     val roundStarted = mutableStateOf(false)
+    val customTaskUsed = mutableStateOf(false)
+    val roundCount = mutableStateOf(0)
+    val actualTaskType = mutableStateOf<String?>(null)
+
+
     private var countdownJob: Job? = null
     private var countdownStartTime: Long? = null // Zeitstempel
     private val totalCountdownDuration = 15 // Sekunden
@@ -83,23 +88,63 @@ class GameViewModel(
         currentTask.value = ""
         countdown.value = 15
         countdownStartTime = null
+        actualTaskType.value = null
     }
+
+
+    // Wiederverwendungsverbot für 10 Runden
+    private val truthCooldownMap = mutableMapOf<String, Int>()
+    private val dareCooldownMap = mutableMapOf<String, Int>()
+
+    private var truthGlobalCooldown = 0
+    private var dareGlobalCooldown = 0
 
     fun getTask(type: String): String {
         val actualType = if (isShuffleMode.value) listOf("Truth", "Dare").random() else type
-        val base = if (actualType == "Truth") truthTasks else dareTasks
-        val custom = customTasks.filter { it.type == actualType }.map { it.text }
-        val source = base + custom
+        actualTaskType.value = actualType
+        val isTruth = actualType.equals("Truth", ignoreCase = true)
+        val base = if (isTruth) truthTasks else dareTasks
+        val used = if (isTruth) usedTruthTasks else usedDareTasks
 
-        val used = if (actualType == "Truth") usedTruthTasks else usedDareTasks
-        val available = source.filterNot { it in used }
+        val allCustom = customTasks.filter { it.type.equals(actualType, ignoreCase = true) }.map { it.text }
+        val cooldownMap = if (isTruth) truthCooldownMap else dareCooldownMap
+        val globalCooldown = if (isTruth) truthGlobalCooldown else dareGlobalCooldown
 
+        // Decrease global cooldown
+        if (isTruth) truthGlobalCooldown = maxOf(0, truthGlobalCooldown - 1)
+        else dareGlobalCooldown = maxOf(0, dareGlobalCooldown - 1)
+
+        // Custom Task möglich?
+        if (globalCooldown <= 0 && allCustom.isNotEmpty()) {
+            val eligible = allCustom.filter { cooldownMap[it] == null || cooldownMap[it]!! <= 0 }
+
+            if (eligible.isNotEmpty()) {
+                val selected = eligible.random()
+
+                // Task-Sperre setzen (z. B. 10 Runden Pause)
+                cooldownMap[selected] = 7
+                if (isTruth) truthGlobalCooldown = (2..3).random()
+                else dareGlobalCooldown = (2..3).random()
+
+                return selected
+            }
+        }
+
+        // Alle Cooldowns runterzählen
+        cooldownMap.keys.forEach { task ->
+            cooldownMap[task] = (cooldownMap[task] ?: 0) - 1
+        }
+
+        // Standardaufgabe
+        val available = base.filterNot { it in used }
         if (available.isEmpty()) used.clear()
-
-        val newTask = (source - used).random()
-        used.add(newTask)
-        return newTask
+        val task = (base - used).random()
+        used.add(task)
+        return task
     }
+
+
+
 
     fun recordChoice(type: String) {
         val player = currentPlayer.value
@@ -155,6 +200,7 @@ class GameViewModel(
             if (selectedOption.value == null) {
                 val type = listOf("Truth", "Dare").random()
                 selectedOption.value = type
+                actualTaskType.value = type
                 currentTask.value = getTask(type)
                 recordChoice(type)
                 onAutoSelect()

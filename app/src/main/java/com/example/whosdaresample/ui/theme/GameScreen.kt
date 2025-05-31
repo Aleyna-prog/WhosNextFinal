@@ -41,8 +41,8 @@ fun GameScreen(
 ) {
     var showExitDialog by remember { mutableStateOf(false) }
 
-    val selectedOption by viewModel.selectedOption
-    val currentTask by viewModel.currentTask
+    val selectedOption = viewModel.selectedOption.value
+    val currentTask = viewModel.currentTask.value
     val isShuffle by viewModel.isShuffleMode
     val currentPlayer by viewModel.currentPlayer
 
@@ -89,6 +89,7 @@ fun GameScreen(
                 Lifecycle.Event.ON_RESUME -> {
                     if (remainingTime.value > 0 && selectedOption == null && !isShuffle && countdownJob == null) {
                         countdownJob = coroutineScope.startCountdown(remainingTime, viewModel, countdownActive)
+
                     }
                 }
 
@@ -240,7 +241,20 @@ fun GameScreen(
                 }
 
             } else if (selectedOption != null) {
-                Text("Your ${selectedOption} task:", color = MaterialTheme.colorScheme.onBackground)
+                val taskLabel = if (viewModel.actualTaskType.value != null) {
+                    "Your ${viewModel.actualTaskType.value} task:"
+                } else if (selectedOption != null) {
+                    "Your $selectedOption task:"
+                } else {
+                    ""
+                }
+                Text(
+                    text = taskLabel,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
                 Text(
                     text = currentTask,
                     color = MaterialTheme.colorScheme.onBackground,
