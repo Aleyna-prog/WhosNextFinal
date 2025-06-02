@@ -260,4 +260,12 @@ class GameViewModel(
     fun getEmojiForPlayer(name: String): String? {
         return playerEmojis[name]
     }
+
+    fun clearGameStats() {
+        viewModelScope.launch {
+            statDao.clearAll()
+            gameStats.clear()
+        }
+    }
+
 }

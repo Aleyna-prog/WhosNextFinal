@@ -13,11 +13,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.whosdaresample.GameViewModel
 
+
 @Composable
 fun EndScreen(
     viewModel: GameViewModel,
     onRestart: () -> Unit
-
 ) {
     val scope = rememberCoroutineScope()
     var statsMap by remember { mutableStateOf<Map<String, Pair<Int, Int>>>(emptyMap()) }
@@ -92,6 +92,7 @@ fun EndScreen(
 
         Button(
             onClick = {
+                viewModel.clearGameStats() // 👈 NEU: Datenbankstatistik löschen
                 viewModel.resetRound()
                 viewModel.roundStarted.value = false
                 onRestart()
@@ -100,6 +101,5 @@ fun EndScreen(
         ) {
             Text("Restart", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
         }
-
     }
 }
