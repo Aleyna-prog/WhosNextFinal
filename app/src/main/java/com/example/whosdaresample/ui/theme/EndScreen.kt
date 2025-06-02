@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.whosdaresample.GameViewModel
 
-
+//endscren
 @Composable
 fun EndScreen(
     viewModel: GameViewModel,
