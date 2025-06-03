@@ -19,8 +19,11 @@ fun AppNavigation(navController: NavHostController, viewModel: GameViewModel) {
         composable("start") {
             StartScreen(
                 viewModel = viewModel,
-                onStartGame = { navController.navigate("spin") },
-                onOpenCustomTasks = {navController.navigate("custom")}
+                onStartGame = {
+                    viewModel.clearGameStats()
+                    navController.navigate("spin")
+                },
+                onOpenCustomTasks = { navController.navigate("custom") }
             )
         }
         composable("spin") {
