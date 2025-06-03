@@ -33,6 +33,8 @@ class GameViewModel(
     val customTaskUsed = mutableStateOf(false)
     val roundCount = mutableStateOf(0)
     val actualTaskType = mutableStateOf<String?>(null)
+    private var lastPlayer: String? = null
+
 
 
     private var countdownJob: Job? = null
@@ -80,7 +82,15 @@ class GameViewModel(
     }
 
     fun pickRandomPlayer() {
-        currentPlayer.value = playerNames.random()
+        if (playerNames.size <= 1) {
+            currentPlayer.value = playerNames.firstOrNull() ?: ""
+            return
+        }
+
+        val available = playerNames.filter { it != lastPlayer }
+        val next = available.random()
+        currentPlayer.value = next
+        lastPlayer = next
     }
 
     fun resetRound() {
