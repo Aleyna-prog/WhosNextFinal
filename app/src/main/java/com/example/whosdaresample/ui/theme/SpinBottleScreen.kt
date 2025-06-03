@@ -61,13 +61,13 @@ fun SpinBottleScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        Text("Who's next?", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
+        Text("Spin the bottle...", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
 
         Image(
-            painter = painterResource(id = R.drawable.bottle),
+            painter = painterResource(id = R.drawable.bottle1),
             contentDescription = "Spinning Bottle",
             modifier = Modifier
-                .size(220.dp)
+                .size(320.dp)
                 .rotate(angle.value)
         )
 
